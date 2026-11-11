@@ -36,6 +36,7 @@ enum MenuId {
     kMenuOpen = 1,
     kMenuPause,
     kMenuCommunications,
+    kMenuToasts,
     kMenuAutostart,
     kMenuAbout,
     kMenuExit,
@@ -149,6 +150,7 @@ bool TrayApp::Initialize(HINSTANCE instance, bool startedAtSignIn) {
     watcher_.Start(window_);
     poller_.Start(window_);
     currentDefault_ = DefaultOutput();
+    intended_ = currentDefault_;
     RefreshOutputs(false);
     AddTrayIcon();
 
@@ -259,18 +261,48 @@ void TrayApp::Decide() {
 
     currentDefault_ = DefaultOutput();
     const bool communications = settings_.communications && DefaultCommunicationsOutput() != choice.id;
-    if (currentDefault_ == choice.id && !communications) return;
-
-    ownSwitch_ = choice.id;
-    ownSwitchAt_ = GetTickCount64();
-    if (!SetDefaultOutput(choice.id, settings_.communications)) {
-        ownSwitch_.clear();
-        Notify(L"Tono could not switch to " + NameOf(choice.id) + L". Your output was left as it was.");
-        return;
+    if (currentDefault_ != choice.id || communications) {
+        ownSwitch_ = choice.id;
+        ownSwitchAt_ = GetTickCount64();
+        if (!SetDefaultOutput(choice.id, settings_.communications)) {
+            ownSwitch_.clear();
+            Notify(L"Tono could not switch to " + NameOf(choice.id) + L". Your output was left as it was.");
+            return;
+        }
+        currentDefault_ = choice.id;
     }
-    currentDefault_ = choice.id;
+    // Also when Windows' own fallback happened to be the right one: the user
+    // still wants to know where the sound went.
+    if (choice.id != intended_) {
+        std::wstring reason = L"First on your list that is on";
+        if (!intended_.empty()) {
+            const DeviceEntry* before = FindEntry(intended_);
+            const bool beforeUsable = before && AvailabilityOf(*before) == Availability::Yes;
+            reason = beforeUsable ? L"Higher on your list than " + NameOf(intended_) : NameOf(intended_) + L" is off";
+        }
+        ShowToast(IconOf(choice.id), NameOf(choice.id), reason);
+    }
+    intended_ = choice.id;
     UpdateTray();
     RefreshPanel();
+}
+
+const wchar_t* TrayApp::IconOf(const std::wstring& id) const {
+    const EndpointInfo* endpoint = FindEndpoint(id);
+    return !endpoint || endpoint->needsTest ? icons::kHeadphones : icons::kSpeakers;
+}
+
+void TrayApp::ShowToast(const wchar_t* icon, const std::wstring& title, const std::wstring& detail) {
+    // The open panel already shows it.
+    if (!settings_.toasts || panel_.IsOpen() || exiting_) return;
+    NOTIFYICONIDENTIFIER id{sizeof(id), window_, icon_.uID};
+    RECT anchor;
+    if (FAILED(Shell_NotifyIconGetRect(&id, &anchor))) {
+        MONITORINFO monitor{sizeof(monitor)};
+        GetMonitorInfoW(MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY), &monitor);
+        anchor = {monitor.rcWork.right - 1, monitor.rcWork.bottom - 1, monitor.rcWork.right, monitor.rcWork.bottom};
+    }
+    toast_.Show(instance_, anchor, icon, title, detail);
 }
 
 void TrayApp::OnDefaultChanged() {
@@ -288,7 +320,12 @@ void TrayApp::OnDefaultChanged() {
             if (candidate.id == previous) entry = &candidate;
         }
         const bool stillUsable = IsOutputActive(previous) && (!entry || AvailabilityOf(*entry) != Availability::No);
-        if (stillUsable) KillTimer(window_, kDecideTimer);
+        if (stillUsable) {
+            KillTimer(window_, kDecideTimer);
+            intended_ = now;
+        }
+    } else if (ours) {
+        intended_ = now;
     }
     UpdateTray();
     RefreshPanel();
@@ -388,6 +425,7 @@ void TrayApp::ShowTrayMenu(POINT point, HWND owner) {
     AppendMenuW(menu, MF_SEPARATOR, 0, nullptr);
     AppendMenuW(menu, MF_STRING | (settings_.communications ? MF_CHECKED : 0), kMenuCommunications,
                 L"Also switch the communications output");
+    AppendMenuW(menu, MF_STRING | (settings_.toasts ? MF_CHECKED : 0), kMenuToasts, L"Small notifications");
     AppendMenuW(menu, MF_STRING | (IsAutostartEnabled() ? MF_CHECKED : 0), kMenuAutostart, L"Start with Windows");
     AppendMenuW(menu, MF_STRING, kMenuAbout, L"About Tono");
     AppendMenuW(menu, MF_SEPARATOR, 0, nullptr);
@@ -411,6 +449,10 @@ void TrayApp::ShowTrayMenu(POINT point, HWND owner) {
         case kMenuPause: SetPaused(!settings_.paused); break;
         case kMenuCommunications:
             settings_.communications = !settings_.communications;
+            Save();
+            break;
+        case kMenuToasts:
+            settings_.toasts = !settings_.toasts;
             Save();
             break;
         case kMenuAutostart:
@@ -491,6 +533,8 @@ void TrayApp::SetPaused(bool paused) {
     Save();
     UpdateTray();
     RefreshPanel();
+    ShowToast(paused ? icons::kPause : icons::kPlay, paused ? L"Tono paused" : L"Tono resumed",
+              paused ? L"Outputs will not be switched" : L"Following your list again");
     if (!paused) ScheduleDecision(500);
 }
 
@@ -742,6 +786,7 @@ void TrayApp::Exit() {
     exiting_ = true;
     panel_.onClosed = nullptr;
     panel_.Close();
+    toast_.Close();
     KillTimer(window_, kDecideTimer);
     KillTimer(window_, kTestTimer);
     KillTimer(window_, kReadyTimer);
@@ -806,6 +851,7 @@ LRESULT TrayApp::HandleMessage(UINT message, WPARAM wParam, LPARAM lParam) {
                 KillTimer(window_, kReadyTimer);
                 ready_ = true;
                 currentDefault_ = DefaultOutput();
+                intended_ = currentDefault_;
                 RefreshOutputs(false);
                 Decide();
             }

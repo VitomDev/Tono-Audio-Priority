@@ -1,6 +1,7 @@
 #pragma once
 
 #include "app/panel.h"
+#include "app/toast.h"
 #include "core/audio.h"
 #include "core/headset.h"
 #include "core/settings.h"
@@ -63,6 +64,8 @@ private:
     void ShowTrayMenu(POINT point, HWND owner);
     void ShowItemMenu(size_t index, POINT point);
     void Notify(const std::wstring& message);
+    void ShowToast(const wchar_t* icon, const std::wstring& title, const std::wstring& detail);
+    const wchar_t* IconOf(const std::wstring& id) const;
     void TogglePanel();
     void ShowPanel();
     void RefreshPanel();
@@ -96,6 +99,9 @@ private:
     std::map<uint32_t, HeadsetState> headsetStates_;  // Last definite answer per VID:PID
     std::vector<HeadsetReading> lastReadings_;
     std::wstring currentDefault_;
+    // The output meant to be in use: Tono's pick or the user's, not the
+    // fallback Windows jumps to when it goes away. Toasts name it.
+    std::wstring intended_;
     std::wstring ownSwitch_;  // The output Tono itself just picked
     ULONGLONG ownSwitchAt_ = 0;
     std::wstring highlight_;  // A new output waiting to be placed
@@ -104,6 +110,7 @@ private:
     HeadsetPoller poller_;
     std::thread download_;
     Panel panel_;
+    Toast toast_;
     Test test_;
 };
 

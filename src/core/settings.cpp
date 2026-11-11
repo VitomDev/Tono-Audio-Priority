@@ -59,6 +59,7 @@ Settings Settings::Load(const wchar_t* keyPath) {
     DWORD value = 0;
     if (ReadDword(key, L"Paused", value)) settings.paused = value != 0;
     if (ReadDword(key, L"Communications", value)) settings.communications = value != 0;
+    if (ReadDword(key, L"Toasts", value)) settings.toasts = value != 0;
 
     DWORD size = 0;
     if (RegGetValueW(key, nullptr, L"Devices", RRF_RT_REG_MULTI_SZ, nullptr, nullptr, &size) == ERROR_SUCCESS) {
@@ -85,6 +86,7 @@ bool Settings::Save(const wchar_t* keyPath) const {
     lines += L'\0';
     const bool saved = WriteDword(key, L"Paused", paused ? 1 : 0) &&
                        WriteDword(key, L"Communications", communications ? 1 : 0) &&
+                       WriteDword(key, L"Toasts", toasts ? 1 : 0) &&
                        RegSetValueExW(key, L"Devices", 0, REG_MULTI_SZ, reinterpret_cast<const BYTE*>(lines.data()),
                                       static_cast<DWORD>(lines.size() * sizeof(wchar_t))) == ERROR_SUCCESS;
     RegCloseKey(key);

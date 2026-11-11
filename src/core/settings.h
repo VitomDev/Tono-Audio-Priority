@@ -21,6 +21,8 @@ struct Settings {
     bool paused = false;
     // Also switch the default communications output (calls, Discord).
     bool communications = false;
+    // Small notes next to the tray when Tono switches or pauses.
+    bool toasts = true;
     bool configured = false;  // A list was saved before
 
     // `keyPath` is relative to HKEY_CURRENT_USER; tests use a scratch key.

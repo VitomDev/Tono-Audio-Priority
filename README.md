@@ -22,6 +22,7 @@ Windows only switches when the output in use disappears, and then to whatever it
 - 🚫 **Never use an output**: switch it off in the list (handy for virtual devices)
 - 🙋 **Your choice wins**: if you, a game or SteamVR pick another output, Tono leaves it until the next device connects or disconnects
 - ⏸️ **Pause** from the panel or the tray menu
+- 💬 **Small notifications** next to the clock when Tono switches output, with the reason (*JBL Tune Buds 2 is off*), and when it pauses. They never take focus and stay away during full-screen games and Do not disturb
 - 🆕 **New outputs** are added at the end of the list and Tono tells you, so you can put them where you want
 - ⏳ Waits a moment before switching, so Bluetooth hiccups and monitors going to sleep do not make it jump around
 - 🛡️ When in doubt, it does nothing: if a headset does not answer, the output stays as it is
@@ -61,6 +62,7 @@ Uninstalling (Settings → Apps) removes Tono, its startup entry, its settings a
 | Mark a manual output on or off | Right-click the tray icon → **… is on** |
 | Pause | ⏸️ in the panel, or right-click the tray icon → **Pause switching** |
 | Also switch the communications output (calls, Discord) | Right-click the tray icon → **Also switch the communications output** |
+| Small notifications on or off | Right-click the tray icon → **Small notifications** |
 | Start with Windows | Right-click the tray icon → **Start with Windows** |
 | Exit | Right-click the tray icon → **Exit Tono** |
 

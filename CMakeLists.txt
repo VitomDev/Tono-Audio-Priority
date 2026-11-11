@@ -26,6 +26,7 @@ add_executable(Tono WIN32
     src/app/main.cpp
     src/app/panel.cpp
     src/app/theme.cpp
+    src/app/toast.cpp
     src/app/tray_app.cpp
     src/app/Tono.rc
 )
