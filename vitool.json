@@ -1,0 +1,15 @@
+{
+  "appId": "{9DC05A86-2A29-4019-A406-25FBA3A4E1B8}",
+  "name": "Tono Audio Priority",
+  "category": "Media",
+  "icon": "assets/tono.png",
+  "screenshots": [
+    "assets/screenshots/screenshot-1.png"
+  ],
+  "installer": "TonoSetup.exe",
+  "exe": "Tono.exe",
+  "settings": [
+    "%LOCALAPPDATA%\\Tono Audio Priority",
+    "HKCU\\Software\\Tono Audio Priority"
+  ]
+}

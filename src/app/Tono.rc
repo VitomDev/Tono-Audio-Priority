@@ -1,0 +1,32 @@
+#include <windows.h>
+#include "resource.h"
+#include "../version.h"
+
+IDI_TONO ICON "../../assets/tono.ico"
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "Tono.manifest"
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION TONO_VERSION_MAJOR, TONO_VERSION_MINOR, TONO_VERSION_PATCH, 0
+PRODUCTVERSION TONO_VERSION_MAJOR, TONO_VERSION_MINOR, TONO_VERSION_PATCH, 0
+FILEOS VOS_NT_WINDOWS32
+FILETYPE VFT_APP
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName", "VitomDev"
+            VALUE "FileDescription", "Tono Audio Priority"
+            VALUE "FileVersion", TONO_VERSION_STRING
+            VALUE "InternalName", "Tono"
+            VALUE "LegalCopyright", "Copyright (c) 2026 VitomDev. MIT License."
+            VALUE "OriginalFilename", "Tono.exe"
+            VALUE "ProductName", "Tono Audio Priority"
+            VALUE "ProductVersion", TONO_VERSION_STRING
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
