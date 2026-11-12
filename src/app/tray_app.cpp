@@ -1,4 +1,5 @@
 #include "app/tray_app.h"
+#include "app/vitool_tray.h"
 
 #include "app/resource.h"
 #include "app/theme.h"
@@ -373,9 +374,9 @@ void TrayApp::AddTrayIcon() {
     icon_.uFlags = NIF_MESSAGE | NIF_TIP | NIF_SHOWTIP;
     icon_.uCallbackMessage = WM_APP_TRAY;
     wcscpy_s(icon_.szTip, L"Tono Audio Priority");
-    Shell_NotifyIconW(NIM_ADD, &icon_);
+    vitool_tray::NotifyIcon(NIM_ADD, &icon_);
     icon_.uVersion = NOTIFYICON_VERSION_4;
-    Shell_NotifyIconW(NIM_SETVERSION, &icon_);
+    vitool_tray::NotifyIcon(NIM_SETVERSION, &icon_);
     tooltip_.clear();
     UpdateTray(true);
 }
@@ -390,7 +391,7 @@ void TrayApp::UpdateTray(bool forceIcon) {
             data.uID = icon_.uID;
             data.uFlags = NIF_ICON;
             data.hIcon = icon;
-            Shell_NotifyIconW(NIM_MODIFY, &data);
+            vitool_tray::NotifyIcon(NIM_MODIFY, &data);
             if (currentIcon_) DestroyIcon(currentIcon_);
             currentIcon_ = icon;
             iconPaused_ = settings_.paused;
@@ -405,7 +406,7 @@ void TrayApp::UpdateTray(bool forceIcon) {
         data.uID = icon_.uID;
         data.uFlags = NIF_TIP | NIF_SHOWTIP;
         wcsncpy_s(data.szTip, tooltip_.c_str(), _TRUNCATE);
-        Shell_NotifyIconW(NIM_MODIFY, &data);
+        vitool_tray::NotifyIcon(NIM_MODIFY, &data);
     }
 }
 
@@ -525,7 +526,7 @@ void TrayApp::Notify(const std::wstring& message) {
     data.dwInfoFlags = NIIF_INFO | NIIF_RESPECT_QUIET_TIME;
     wcscpy_s(data.szInfoTitle, L"Tono Audio Priority");
     wcsncpy_s(data.szInfo, message.c_str(), _TRUNCATE);
-    Shell_NotifyIconW(NIM_MODIFY, &data);
+    vitool_tray::NotifyIcon(NIM_MODIFY, &data);
 }
 
 void TrayApp::SetPaused(bool paused) {
@@ -792,7 +793,7 @@ void TrayApp::Exit() {
     KillTimer(window_, kReadyTimer);
     watcher_.Stop();
     poller_.Stop();
-    Shell_NotifyIconW(NIM_DELETE, &icon_);
+    vitool_tray::NotifyIcon(NIM_DELETE, &icon_);
     DestroyWindow(window_);
 }
 
@@ -809,6 +810,7 @@ LRESULT CALLBACK TrayApp::WindowProc(HWND window, UINT message, WPARAM wParam, L
 }
 
 LRESULT TrayApp::HandleMessage(UINT message, WPARAM wParam, LPARAM lParam) {
+    if (vitool_tray::HandleMessage(message, wParam)) return 0;
     if (message == taskbarCreatedMessage_ && taskbarCreatedMessage_ != 0) {
         AddTrayIcon();
         return 0;
