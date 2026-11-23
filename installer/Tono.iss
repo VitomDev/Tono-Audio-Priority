@@ -6,7 +6,7 @@
 ;
 ; Built by build.ps1, which passes /DBuildDir=<folder with Tono.exe>.
 
-#define AppVersion "1.0.3"
+#define AppVersion "1.0.4"
 #define AppName "Tono Audio Priority"
 #define RunKey "Software\Microsoft\Windows\CurrentVersion\Run"
 #define StartupApprovedKey "Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"
@@ -45,6 +45,10 @@ WizardStyle=modern
 LicenseFile=..\LICENSE
 ; Tono is closed by the code below, through its own window.
 CloseApplications=no
+
+[Messages]
+; Shown above the license on the wizard's license page.
+LicenseLabel3=Tono is free and open source. If you paid for it, you were scammed: the official download is only at github.com/VitomDev. Please read the license below and accept it to continue.
 
 [Files]
 Source: "{#BuildDir}\Tono.exe"; DestDir: "{app}"; Flags: ignoreversion

@@ -543,6 +543,7 @@ void TrayApp::ShowAbout() {
     const std::wstring text =
         L"Tono Audio Priority " TONO_VERSION_STRING_W L"\n"
         L"Copyright (c) 2026 VitomDev. MIT License.\n"
+        L"Tono is free: if you paid for it, you were scammed.\n"
         L"https://github.com/VitomDev/Tono-Audio-Priority\n\n"
         L"Optional: HeadsetControl " + std::wstring(kHeadsetControlVersion) +
         L" by Denis Arnst (Sapd) and contributors, GPL v3.\n"
